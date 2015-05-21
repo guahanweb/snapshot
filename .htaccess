@@ -1,0 +1,6 @@
+RewriteEngine on
+RewriteBase /snapshot
+
+# For now, reroute all traffic to the app directory
+RewriteCond %{REQUEST_URI} !^/snapshot/app/
+RewriteRule ^(.*)$ app/$1 [L]
