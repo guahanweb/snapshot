@@ -1,0 +1,51 @@
+.main {
+    width: 600px;
+    margin: 0 auto;
+
+    .screen {
+        position: relative;
+        margin: 0 calc((600px - 532px) / 2);
+
+        .viewport {
+            height: 400px;
+            width: 532px;
+            margin: 15px auto;
+            background-color: #000;
+        }
+
+        .flash {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background-color: #fff;
+            opacity: 1;
+
+            &.fading {
+                @include prefix(transition, opacity 0.3s linear);
+            }
+
+            &.off {
+                opacity: 0;
+            }
+        }
+    }
+
+    .controls {
+        ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        li {
+            list-stye-type: none;
+            display: inline-block;
+            padding: 4px;
+
+            a {
+                display: block;
+            }
+        }
+    }
+}
