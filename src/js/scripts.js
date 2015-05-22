@@ -12,12 +12,42 @@
     var logDelay = 3000;
     var logTimeout = null;
 
+    var config;
+    var defaults = {
+        flash: true,
+
+        countdown: true,
+        countdown_timer: 5,
+
+        image_format: 'jpeg',
+        jpeg_quality: 65
+    };
+
+    function writeLog(cb) {
+        return setTimeout(function () {
+            Webcam.snap(function (data_uri) {
+                Webcam.upload(data_uri, 'log.php', function (code) {
+                    if (code === 200) {
+                        cb(true);
+                    } else {
+                        cb(false);
+                    }
+                });
+            });
+        }, logDelay);
+    }
+
     var App = {
-        init: function () {
+        init: function (opts) {
             imageHolder = document.getElementById('snapshots');
             trigger = document.getElementById('ss-trigger');
             counter = document.getElementById('counter-wrapper');
             flash = document.querySelector('#webcam .flash');
+
+            config = defaults;
+            Object.keys(opts||{}).foreach(function (k) {
+                config[k] = opts[k];
+            });
 
             App.setup();
             App.listen();
@@ -25,8 +55,8 @@
 
         setup: function () {
             Webcam.set({
-                image_format: 'jpeg',
-                jpeg_quality: 65,
+                image_format: config.image_format,
+                jpeg_quality: config.jpeg_quality,
                 height: imgHeight,
                 width: imgWidth
             });
@@ -47,20 +77,30 @@
             });
         },
 
-        snap: function () {
-            App.countdown(5, function () {
-                // Have to step our flash with timeouts for the render stack
+        flash: function () {
+            if (config.flash) {
                 setTimeout(function () {
                     flash.classList.remove('fading');
                     flash.classList.remove('off');
                     setTimeout(function () {
                         flash.classList.add('fading');
                         flash.classList.add('off');
-                    }, 10);
-                }, 10);
+                    }, 20);
+                }, 20);
+            }
+        },
 
-                Webcam.snap(App.appendSnapshot);
-            });
+        click: function () {
+            App.flash();
+            Webcam.snap(App.appendSnapshot);
+        },
+
+        snap: function () {
+            if (config.countdown) {
+                App.countdown(config.countdown_timer, App.click);
+            } else {
+                App.click();
+            }
         },
 
         countdown: function (seconds, cb) {
@@ -86,17 +126,12 @@
         },
 
         startLog: function () {
-            logTimeout = setTimeout(function () {
-                Webcam.snap(function (data_uri) {
-                    Webcam.upload(data_uri, 'log.php', function (code) {
-                        if (code === 200) {
-                            // Successfully logged
-                        } else {
-                            // Failed to log
-                        }
-                    });
-                });
-            }, logDelay);
+            logTimeout = writeLog(function (success) {
+                if (success) {
+                    // Recursively call on success
+                    App.startLog();
+                }
+            });
         },
 
         stopLog: function () {
