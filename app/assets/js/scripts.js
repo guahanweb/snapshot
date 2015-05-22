@@ -53,7 +53,7 @@
             flash = document.querySelector('#webcam .flash');
 
             config = defaults;
-            Object.keys(opts||{}).foreach(function (k) {
+            Object.keys(opts||{}).forEach(function (k) {
                 config[k] = opts[k];
             });
 
